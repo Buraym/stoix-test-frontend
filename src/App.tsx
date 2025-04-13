@@ -1,14 +1,5 @@
-import { useState } from "react";
-import { Button } from "./components/ui/button";
-
-function App() {
-	const [count, setCount] = useState(0);
-
+export default function MainPanelPage() {
 	return (
-		<div className="flex flex-col items-center justify-center w-screen min-h-svh">
-			<Button variant="secondary">Click me</Button>
-		</div>
+		<div className="flex flex-col items-center justify-center w-screen min-h-svh"></div>
 	);
 }
-
-export default App;
