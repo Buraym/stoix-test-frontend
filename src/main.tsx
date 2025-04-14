@@ -1,12 +1,23 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import MainPanelPage from "./App.tsx";
+import MainLayout from "./layouts/user.tsx";
+import MainPanelPage from "./pages/MainPanel.tsx";
 
 let router = createBrowserRouter([
 	{
 		path: "/",
-		Component: MainPanelPage,
+		Component: MainLayout,
+		children: [
+			{
+				index: true,
+				Component: MainPanelPage,
+			},
+			{
+				path: "configs",
+				Component: MainPanelPage,
+			},
+		],
 	},
 ]);
 
