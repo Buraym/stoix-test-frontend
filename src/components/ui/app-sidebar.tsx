@@ -3,6 +3,7 @@ import { Home, Kanban, Settings } from "lucide-react";
 import {
 	Sidebar,
 	SidebarContent,
+	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarGroupLabel,
@@ -10,6 +11,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "../../components/ui/sidebar";
+import { ModeToggle } from "./mode-toggle";
 
 const topics = [
 	{
@@ -21,11 +23,6 @@ const topics = [
 		title: "Kanban",
 		url: "kanban",
 		icon: Kanban,
-	},
-	{
-		title: "Configurações",
-		url: "configs",
-		icon: Settings,
 	},
 ];
 
@@ -51,6 +48,23 @@ export function AppSidebar() {
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
+			<SidebarFooter>
+				<SidebarMenu>
+					<SidebarMenuItem key="Configurações">
+						<SidebarMenuButton asChild>
+							<a href="configs">
+								<Settings />
+								<span>Configurações</span>
+							</a>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+					<SidebarMenuItem>
+						<SidebarMenuButton asChild>
+							<ModeToggle />
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+				</SidebarMenu>
+			</SidebarFooter>
 		</Sidebar>
 	);
 }
