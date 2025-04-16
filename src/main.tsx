@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import MainLayout from "./layouts/user.tsx";
 import MainPanelPage from "./pages/MainPanel.tsx";
+import { api_instance } from "./utils/index.ts";
 
 let router = createBrowserRouter([
 	{

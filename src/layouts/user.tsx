@@ -6,17 +6,17 @@ import { ThemeProvider } from "../components/theme-provider";
 
 export default function MainLayout() {
 	return (
-		<SidebarProvider>
-			<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+		<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+			<SidebarProvider>
 				<AppSidebar />
 				<main className="w-full">
-					<div className="flex flex-col justify-start items-start w-full">
+					<div className="flex flex-col justify-start items-start w-full h-full">
 						<SidebarTrigger />
 						<Separator className="h-1 bg-black" />
 						<Outlet />
 					</div>
 				</main>
-			</ThemeProvider>
-		</SidebarProvider>
+			</SidebarProvider>
+		</ThemeProvider>
 	);
 }
