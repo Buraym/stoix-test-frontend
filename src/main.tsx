@@ -1,10 +1,31 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { createBrowserRouter, RouterProvider } from "react-router";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import MainLayout from "./layouts/user.tsx";
+import MainPanelPage from "./pages/MainPanel.tsx";
+import CreateTaskPage from "./pages/CreateTaskPage.tsx";
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+let router = createBrowserRouter([
+	{
+		path: "/",
+		Component: MainLayout,
+		children: [
+			{
+				index: true,
+				Component: MainPanelPage,
+			},
+			{
+				path: "create-task",
+				Component: CreateTaskPage,
+			},
+			{
+				path: "configs",
+				Component: MainPanelPage,
+			},
+		],
+	},
+]);
+
+const root = document.getElementById("root") as HTMLElement;
+
+createRoot(root).render(<RouterProvider router={router} />);
