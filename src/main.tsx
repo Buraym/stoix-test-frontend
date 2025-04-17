@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import MainLayout from "./layouts/user.tsx";
 import MainPanelPage from "./pages/MainPanel.tsx";
-import { api_instance } from "./utils/index.ts";
+import CreateTaskPage from "./pages/CreateTaskPage.tsx";
 
 let router = createBrowserRouter([
 	{
@@ -13,6 +13,10 @@ let router = createBrowserRouter([
 			{
 				index: true,
 				Component: MainPanelPage,
+			},
+			{
+				path: "create-task",
+				Component: CreateTaskPage,
 			},
 			{
 				path: "configs",

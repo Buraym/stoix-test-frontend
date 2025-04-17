@@ -3,7 +3,13 @@ import { BadgePlus, Search, Trash2 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import {
 	Form,
 	FormControl,
@@ -26,10 +32,22 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { Link } from "react-router";
 
 const formSchema = z.object({
 	taskTitle: z.string().min(0),
 	tasks: z.array(tasksSchema),
+	createTask: z.object({
+		title: z.string(),
+		color: z.string(),
+		descriptions: z.array(
+			z.object({
+				tipe: z.enum(["text", "image", "video", "list"]),
+				content: z.string(),
+				order: z.number(),
+			})
+		),
+	}),
 });
 
 export default function MainPanelPage() {
@@ -51,7 +69,7 @@ export default function MainPanelPage() {
 	}, []);
 
 	return (
-		<div className="flex flex-col items-center justify-start w-full max-w-screen h-full p-4 gap-y-4">
+		<div className="flex flex-col items-center justify-start w-full max-w-screen h-full p-4 gap-y-4 ">
 			<div className="flex justify-start items-center w-full gap-x-2">
 				<Form {...form}>
 					<form
@@ -73,14 +91,20 @@ export default function MainPanelPage() {
 								</FormItem>
 							)}
 						/>
-						<Button variant="outline" type="submit">
+						<Button
+							variant="outline"
+							type="submit"
+							className="dark:text-[#CDFE04]"
+						>
 							<Search />
 						</Button>
 					</form>
 				</Form>
-				<Button variant="outline">
-					<BadgePlus />
-				</Button>
+				<Link to="/create-task">
+					<Button variant="outline" className="dark:text-[#CDFE04]">
+						<BadgePlus />
+					</Button>
+				</Link>
 			</div>
 			<ScrollArea className="h-full flex w-full rounded-lg border p-4">
 				<div className="flex h-full w-3xl gap-x-4">
@@ -90,12 +114,35 @@ export default function MainPanelPage() {
 								backgroundColor: task.color,
 								borderColor: task.color,
 							}}
-							className="w-96 min-w-72 h-full"
+							className="w-96 min-w-72 h-full	"
 							key={task.id}
 						>
 							<CardHeader>
-								<CardTitle>{task.title}</CardTitle>
+								<CardTitle>
+									<h2 className="leading-none font-extrabold">
+										{task.title}
+									</h2>
+								</CardTitle>
 							</CardHeader>
+							<CardContent>
+								{task.descriptions.map((description) =>
+									description.type === "text" ? (
+										<small
+											key={description.id}
+											className="text-sm font-medium leading-none mt-4"
+										>
+											{description.content}
+										</small>
+									) : (
+										<p
+											key={description.id}
+											className="leading-7 [&:not(:first-child)]:mt-6"
+										>
+											{description.content}
+										</p>
+									)
+								)}
+							</CardContent>
 							<CardFooter>
 								<Dialog>
 									<DialogTrigger asChild>

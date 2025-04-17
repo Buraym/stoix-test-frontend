@@ -44,3 +44,39 @@ export async function RemoveTaskById(id: number): Promise<{ msg: string }> {
 		};
 	}
 }
+
+export async function CreateTask({
+	title,
+	color,
+	descriptions,
+}: {
+	title: string;
+	color: string;
+	descriptions: {
+		type: "text" | "image" | "video" | "list";
+		id: string;
+		content: string;
+		order: number;
+	}[];
+}) {
+	let { msg, task } = (
+		await api_instance.post("tasks", {
+			title,
+			color,
+		})
+	).data;
+	let descriptionPromises: Promise<any>[] = [];
+	for (let i = 0; i < descriptions.length; i++) {
+		descriptionPromises.push(
+			api_instance.post("task-descriptions", {
+				type: descriptions[i].type,
+				content: descriptions[i].content,
+				order: i,
+				task_id: task.id,
+			})
+		);
+	}
+	await Promise.all(descriptionPromises);
+
+	return { msg, task };
+}

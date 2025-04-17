@@ -16,12 +16,12 @@ import { ModeToggle } from "./mode-toggle";
 const topics = [
 	{
 		title: "Menu principal",
-		url: "",
+		url: "/",
 		icon: Home,
 	},
 	{
 		title: "Kanban",
-		url: "kanban",
+		url: "/kanban",
 		icon: Kanban,
 	},
 ];
