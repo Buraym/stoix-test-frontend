@@ -20,6 +20,7 @@ import {
 	ClipboardPlus,
 	GripHorizontal,
 	ListPlus,
+	ListX,
 	Plus,
 	Trash2,
 } from "lucide-react";
@@ -43,11 +44,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { CreateTask } from "@/utils/api";
+import { CreateTask, GetTaskById, UpdateTaskById } from "@/utils/api";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ExtractSrcFromEmbedded } from "@/utils";
 import { useNavigate } from "react-router";
+import { useLoaderData } from "react-router";
+import { useEffect } from "react";
 
 export interface IDescription {
 	id: string;
@@ -55,8 +58,10 @@ export interface IDescription {
 	content: string;
 	order: number;
 	list_items: {
+		id: string;
 		name: string;
 		done: boolean;
+		order: number;
 	}[];
 }
 
@@ -65,16 +70,22 @@ export interface ISortableItem {
 	content: string;
 	type: "video" | "image" | "text" | "list";
 	list_items: {
+		id: string;
 		name: string;
 		done: boolean;
+		order: number;
 	}[];
 	onChange: any;
+	addDescription: any;
 	removeDescription: any;
+	RemoveListItem: any;
 }
 
 export interface IDescriptionDnDColumn {
 	onChange: any;
+	addDescriptionList: any;
 	removeDescription: any;
+	RemoveListItem: any;
 	form: UseFormReturn<
 		{
 			title: string;
@@ -85,10 +96,20 @@ export interface IDescriptionDnDColumn {
 				content: string;
 				order: number;
 				list_items: {
+					id: string;
 					name: string;
 					done: boolean;
+					order: number;
 				}[];
 			}[];
+			new: {
+				descriptions: number[];
+				list_items: number[];
+			};
+			removed: {
+				descriptions: number[];
+				list_items: number[];
+			};
 		},
 		any,
 		{
@@ -100,10 +121,20 @@ export interface IDescriptionDnDColumn {
 				content: string;
 				order: number;
 				list_items: {
+					id: string;
 					name: string;
 					done: boolean;
+					order: number;
 				}[];
 			}[];
+			new: {
+				descriptions: number[];
+				list_items: number[];
+			};
+			removed: {
+				descriptions: number[];
+				list_items: number[];
+			};
 		}
 	>;
 }
@@ -119,12 +150,22 @@ const formSchema = z.object({
 			order: z.number(),
 			list_items: z.array(
 				z.object({
+					id: z.string(),
 					name: z.string(),
 					done: z.boolean(),
+					order: z.number(),
 				})
 			),
 		})
 	),
+	new: z.object({
+		descriptions: z.array(z.number()),
+		list_items: z.array(z.number()),
+	}),
+	removed: z.object({
+		descriptions: z.array(z.number()),
+		list_items: z.array(z.number()),
+	}),
 });
 
 const SortableDescription = ({
@@ -133,7 +174,9 @@ const SortableDescription = ({
 	type,
 	list_items,
 	onChange,
+	addDescription,
 	removeDescription,
+	RemoveListItem,
 }: ISortableItem) => {
 	const { attributes, listeners, setNodeRef, transform, transition } =
 		useSortable({ id });
@@ -217,12 +260,7 @@ const SortableDescription = ({
 							type="button"
 							variant="outline"
 							className="dark:text-[#CDFE04]"
-							onClick={() =>
-								onChange(id, "list_items", [
-									...list_items,
-									{ name: "", done: false },
-								])
-							}
+							onClick={() => addDescription(id)}
 						>
 							<Plus />
 						</Button>
@@ -274,17 +312,27 @@ const SortableDescription = ({
 									onChange(
 										id,
 										"list_items",
-										list_items.map((_, index) => {
-											if (list_item_index === index) {
-												_.name = String(
-													ev?.target?.value
-												);
+										list_items.map(
+											(actual_list_item, index) => {
+												if (list_item_index === index) {
+													actual_list_item.name =
+														String(
+															ev?.target?.value
+														);
+												}
+												return actual_list_item;
 											}
-											return _;
-										})
+										)
 									)
 								}
 							/>
+							<Button
+								variant="outline"
+								className="text-[#DD1C1A] bg-transparent hover:bg-[#DD1C1A] hover:border-[#DD1C1A] hover:text-white transition-colors"
+								onClick={() => RemoveListItem(id, list_item.id)}
+							>
+								<ListX />
+							</Button>
 						</div>
 					))}
 				</div>
@@ -337,7 +385,9 @@ const SortableDescription = ({
 const DescriptionDnDColumn = ({
 	form,
 	onChange,
+	addDescriptionList,
 	removeDescription,
+	RemoveListItem,
 }: IDescriptionDnDColumn) => {
 	const sensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -381,6 +431,8 @@ const DescriptionDnDColumn = ({
 						list_items={description.list_items}
 						onChange={onChange}
 						removeDescription={removeDescription}
+						addDescription={addDescriptionList}
+						RemoveListItem={RemoveListItem}
 					/>
 				))}
 			</SortableContext>
@@ -390,20 +442,44 @@ const DescriptionDnDColumn = ({
 
 export default function CreateTaskPage() {
 	let navigate = useNavigate();
+	let params = useLoaderData();
 	let form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			title: "Estudar para a prova de quinta ( RES. MAT II )",
-			color: "#CDFE04",
+			title: params?.id
+				? ""
+				: "Estudar para a prova de quinta ( RES. MAT II )",
+			color: params?.id ? "" : "#CDFE04",
 			descriptions: [],
+			new: {
+				descriptions: [],
+				list_items: [],
+			},
+			removed: {
+				descriptions: [],
+				list_items: [],
+			},
 		},
 	});
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
-			await CreateTask(values);
-			toast("Tarefa criada com sucesso !");
-			navigate("/");
+			if (params?.id) {
+				let id = String(params?.id);
+				const message = await UpdateTaskById({
+					id,
+					title: values.title,
+					color: values.color,
+					descriptions: values.descriptions,
+					news: values.new,
+					deleted: values.removed,
+				});
+				toast(message);
+			} else {
+				await CreateTask(values);
+				toast("Tarefa criada com sucesso !");
+				navigate("/");
+			}
 		} catch (err) {
 			console.log(err);
 			toast("Erro ao criar tarefa");
@@ -412,19 +488,47 @@ export default function CreateTaskPage() {
 
 	function AddDescription() {
 		let descriptionList: IDescription[] = form.getValues("descriptions");
-		descriptionList.push({
+		let newlyAddedDescriptionList: number[] =
+			form.getValues("new.descriptions");
+		let newDescription = {
 			id: String(new Date().valueOf()),
 			type: "text",
 			content: "",
 			order: descriptionList.length,
 			list_items: [],
-		});
+		} as any;
+		descriptionList.push(newDescription);
+		newlyAddedDescriptionList.push(Number(newDescription.id));
 		form.setValue("descriptions", descriptionList);
+		form.setValue("new.descriptions", newlyAddedDescriptionList);
+	}
+
+	function AddListItem(description_id: string) {
+		let descriptionList: IDescription[] = form.watch("descriptions");
+		let newListItemId = String(new Date().valueOf());
+		descriptionList = descriptionList.map((description) => {
+			if (description.id === description_id) {
+				description.list_items = [
+					...description.list_items,
+					{
+						id: newListItemId,
+						name: "",
+						done: false,
+						order: description.list_items.length,
+					},
+				];
+			}
+			return description;
+		});
+		let newlyAddedDescriptionList: number[] = form.watch("new.list_items");
+		newlyAddedDescriptionList.push(Number(newListItemId));
+		form.setValue("descriptions", descriptionList);
+		form.setValue("new.list_items", newlyAddedDescriptionList);
 	}
 
 	function ChangeDescription(
 		id: string,
-		field: "type" | "content",
+		field: "type" | "content" | "list_items",
 		value: any
 	) {
 		let descriptions = form.watch("descriptions");
@@ -440,9 +544,65 @@ export default function CreateTaskPage() {
 	function RemoveDescription(id: string) {
 		let descriptions = form
 			.watch("descriptions")
-			.filter((description) => description.id === id);
+			.filter((description) => String(description.id) !== id);
+		let removedDescriptions = form.watch("removed.descriptions");
+		removedDescriptions.push(Number(id));
+
+		let newlyAddedDescription = form.watch("new.descriptions");
+		if (!newlyAddedDescription.includes(Number(id))) {
+			form.setValue("removed.descriptions", removedDescriptions);
+		} else {
+			form.setValue(
+				"new.descriptions",
+				newlyAddedDescription.filter((item) => String(item) === id)
+			);
+		}
 		form.setValue("descriptions", descriptions);
 	}
+
+	function RemoveListItem(description_id: string, id: string) {
+		let descriptions = form.watch("descriptions").map((description) => {
+			if (description.id === description_id) {
+				description.list_items = description.list_items.filter(
+					(list_item) => list_item.id !== id
+				);
+			}
+			return description;
+		});
+
+		let newlyAddedListItems = form.watch("new.list_items");
+
+		if (!newlyAddedListItems.includes(Number(id))) {
+			let removedListItem = form.watch("removed.list_items");
+			removedListItem.push(Number(id));
+			form.setValue("removed.list_items", removedListItem);
+		} else {
+			form.setValue(
+				"new.list_items",
+				newlyAddedListItems.filter((item) => String(item) !== id)
+			);
+		}
+
+		form.setValue("descriptions", descriptions);
+	}
+
+	async function LoadTask(id: string) {
+		try {
+			const task = await GetTaskById(Number(id));
+			form.setValue("title", task.title);
+			form.setValue("color", task.color);
+			form.setValue("descriptions", task.descriptions);
+		} catch (err) {
+			console.log(err);
+			toast("Houve um erro ao carregar a tarefa !");
+		}
+	}
+
+	useEffect(() => {
+		if (params) {
+			LoadTask(params.id);
+		}
+	}, []);
 
 	return (
 		<div className="flex items-start justify-between w-full max-w-screen h-full p-4 gap-4">
@@ -492,6 +652,8 @@ export default function CreateTaskPage() {
 							form={form}
 							onChange={ChangeDescription}
 							removeDescription={RemoveDescription}
+							addDescriptionList={AddListItem}
+							RemoveListItem={RemoveListItem}
 						/>
 						<Button
 							variant="outline"
@@ -499,7 +661,7 @@ export default function CreateTaskPage() {
 							className="dark:bg-[#CDFE04] dark:border-none"
 						>
 							<ClipboardPlus />
-							Registrar tarefa
+							{params?.id ? "Atualizar" : "Registrar"} tarefa
 						</Button>
 					</form>
 				</Form>
@@ -568,6 +730,7 @@ export default function CreateTaskPage() {
 									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 									referrerPolicy="strict-origin-when-cross-origin"
 									allowFullScreen
+									key={description.id}
 								></iframe>
 							) : (
 								<img

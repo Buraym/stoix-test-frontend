@@ -19,6 +19,13 @@ let router = createBrowserRouter([
 				Component: CreateTaskPage,
 			},
 			{
+				path: "task/:taskId",
+				loader: async ({ params }) => {
+					return { id: params.taskId };
+				},
+				Component: CreateTaskPage,
+			},
+			{
 				path: "configs",
 				Component: MainPanelPage,
 			},
