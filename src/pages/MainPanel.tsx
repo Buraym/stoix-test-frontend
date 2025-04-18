@@ -39,7 +39,6 @@ import {
 } from "@/components/ui/dialog";
 import { Link } from "react-router";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
@@ -195,9 +194,11 @@ export default function MainPanelPage() {
 						>
 							<CardHeader>
 								<CardTitle>
-									<h2 className="leading-none font-extrabold">
-										{task.title}
-									</h2>
+									<Link to={`/task/${task.id}`}>
+										<h2 className="leading-none font-extrabold">
+											{task.title}
+										</h2>
+									</Link>
 								</CardTitle>
 							</CardHeader>
 							<CardContent>
@@ -212,11 +213,11 @@ export default function MainPanelPage() {
 									) : description.type === "list" ? (
 										<div
 											key={description.id}
-											className="flex flex-col justify-start items-start gap-y-2"
+											className="flex flex-col justify-start items-start gap-y-2 my-4"
 										>
 											<small
 												key={description.id}
-												className="text-sm font-medium leading-none mt-4"
+												className="text-sm font-medium leading-none"
 											>
 												{description.content}
 											</small>
@@ -292,7 +293,7 @@ export default function MainPanelPage() {
 														src={
 															description.content
 														}
-														className="w-full h-full rounded-md object-cover"
+														className="w-full h-full rounded-md object-cover my-4"
 														alt="Description image"
 													/>
 												</AspectRatio>
