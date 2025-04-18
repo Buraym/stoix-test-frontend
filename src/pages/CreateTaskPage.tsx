@@ -16,7 +16,13 @@ import {
 } from "@dnd-kit/sortable";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ClipboardPlus, GripHorizontal, ListPlus, Trash2 } from "lucide-react";
+import {
+	ClipboardPlus,
+	GripHorizontal,
+	ListPlus,
+	Plus,
+	Trash2,
+} from "lucide-react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { CSS } from "@dnd-kit/utilities";
 import { z } from "zod";
@@ -37,25 +43,31 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	CreateTask,
-	GetTasks,
-	GetTasksByTitle,
-	RemoveTaskById,
-} from "@/utils/api";
+import { CreateTask } from "@/utils/api";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ExtractSrcFromEmbedded } from "@/utils";
+import { useNavigate } from "react-router";
 
 export interface IDescription {
 	id: string;
 	type: "text" | "image" | "video" | "list";
 	content: string;
 	order: number;
+	list_items: {
+		name: string;
+		done: boolean;
+	}[];
 }
 
 export interface ISortableItem {
 	id: string;
 	content: string;
 	type: "video" | "image" | "text" | "list";
+	list_items: {
+		name: string;
+		done: boolean;
+	}[];
 	onChange: any;
 	removeDescription: any;
 }
@@ -72,6 +84,10 @@ export interface IDescriptionDnDColumn {
 				id: string;
 				content: string;
 				order: number;
+				list_items: {
+					name: string;
+					done: boolean;
+				}[];
 			}[];
 		},
 		any,
@@ -83,6 +99,10 @@ export interface IDescriptionDnDColumn {
 				id: string;
 				content: string;
 				order: number;
+				list_items: {
+					name: string;
+					done: boolean;
+				}[];
 			}[];
 		}
 	>;
@@ -97,6 +117,12 @@ const formSchema = z.object({
 			type: z.enum(["text", "image", "video", "list"]),
 			content: z.string(),
 			order: z.number(),
+			list_items: z.array(
+				z.object({
+					name: z.string(),
+					done: z.boolean(),
+				})
+			),
 		})
 	),
 });
@@ -105,6 +131,7 @@ const SortableDescription = ({
 	id,
 	content,
 	type,
+	list_items,
 	onChange,
 	removeDescription,
 }: ISortableItem) => {
@@ -115,6 +142,35 @@ const SortableDescription = ({
 		transform: CSS.Transform.toString(transform),
 		transition,
 	};
+
+	function GetVideoURL(id: string, iframeHTML: string) {
+		let result = ExtractSrcFromEmbedded(iframeHTML);
+		if (result === null) {
+			toast("Houve um erro ao processar o vídeo !");
+		} else {
+			onChange(id, "content", result);
+		}
+	}
+
+	async function GetBase64IMG(id: string, ev: any) {
+		try {
+			const file = ev.target.files?.[0];
+			const reader = new FileReader();
+			reader.onload = () => {
+				const result = reader.result;
+				if (typeof result === "string") {
+					onChange(id, "content", result);
+				} else {
+					toast("Houve um erro ao processar a imagem !");
+				}
+			};
+
+			reader.readAsDataURL(file);
+		} catch (err) {
+			console.log(err);
+			toast("Houve um erro ao selecionar a imagem !");
+		}
+	}
 
 	return (
 		<div
@@ -130,40 +186,150 @@ const SortableDescription = ({
 				<GripHorizontal className="text-black size-3.5" />
 			</div>
 			<div className="w-full flex justify-between items-center">
-				<Select
-					defaultValue={type}
-					onValueChange={(val) => onChange(id, "type", String(val))}
-				>
-					<SelectTrigger className="w-[200px]">
-						<SelectValue placeholder="Selecione um tipo" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectGroup>
-							<SelectLabel>Tipos disponíveis</SelectLabel>
-							<SelectItem value="text">Texto simples</SelectItem>
-							<SelectItem value="image">Imagem</SelectItem>
-							<SelectItem value="video">
-								Vídeo ( Youtube ){" "}
-							</SelectItem>
-							<SelectItem value="list">
-								Lista de afazeres
-							</SelectItem>
-						</SelectGroup>
-					</SelectContent>
-				</Select>
+				<div className="flex justify-start items-center gap-x-2">
+					<Select
+						defaultValue={type}
+						onValueChange={(val) =>
+							onChange(id, "type", String(val))
+						}
+					>
+						<SelectTrigger className="w-[200px]">
+							<SelectValue placeholder="Selecione um tipo" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectGroup>
+								<SelectLabel>Tipos disponíveis</SelectLabel>
+								<SelectItem value="text">
+									Texto simples
+								</SelectItem>
+								<SelectItem value="image">Imagem</SelectItem>
+								<SelectItem value="video">
+									Vídeo ( Youtube ){" "}
+								</SelectItem>
+								<SelectItem value="list">
+									Lista de afazeres
+								</SelectItem>
+							</SelectGroup>
+						</SelectContent>
+					</Select>
+					{type === "list" && (
+						<Button
+							type="button"
+							variant="outline"
+							className="dark:text-[#CDFE04]"
+							onClick={() =>
+								onChange(id, "list_items", [
+									...list_items,
+									{ name: "", done: false },
+								])
+							}
+						>
+							<Plus />
+						</Button>
+					)}
+				</div>
+
 				<Button
+					type="button"
 					className="text-[#DD1C1A] hover:bg-[#DD1C1A] hover:border-[#DD1C1A] hover:text-white transition-colors"
 					onClick={() => removeDescription(id)}
 				>
 					<Trash2 />
 				</Button>
 			</div>
-			<Textarea
-				value={content}
-				onChange={(ev) =>
-					onChange(id, "content", String(ev?.target?.value))
-				}
-			/>
+			{type === "list" ? (
+				<div className="flex flex-col justify-start items-start">
+					<Input
+						value={content}
+						onChange={(ev) =>
+							onChange(id, "content", String(ev?.target?.value))
+						}
+					/>
+					{list_items?.map((list_item, list_item_index) => (
+						<div
+							key={list_item_index}
+							className="flex w-full justify-center items-center gap-x-2 px-2 pt-4"
+						>
+							<Checkbox
+								checked={list_item.done}
+								onCheckedChange={(checked) =>
+									onChange(
+										id,
+										"list_items",
+										list_items.map((_, index) => {
+											if (list_item_index === index) {
+												_.done =
+													checked === true
+														? true
+														: false;
+											}
+											return _;
+										})
+									)
+								}
+							/>
+							<Input
+								value={list_item.name}
+								onChange={(ev) =>
+									onChange(
+										id,
+										"list_items",
+										list_items.map((_, index) => {
+											if (list_item_index === index) {
+												_.name = String(
+													ev?.target?.value
+												);
+											}
+											return _;
+										})
+									)
+								}
+							/>
+						</div>
+					))}
+				</div>
+			) : type === "video" ? (
+				<div className="flex flex-col justify-start items-start gap-y-2">
+					<Input
+						onChange={(ev) =>
+							GetVideoURL(id, String(ev?.target?.value))
+						}
+					/>
+					{content !== "" && (
+						<iframe
+							width="560"
+							height="315"
+							className="w-full h-full my-4 rounded"
+							src={content}
+							title="YouTube video player"
+							allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+							referrerPolicy="strict-origin-when-cross-origin"
+							allowFullScreen
+						></iframe>
+					)}
+				</div>
+			) : type === "text" ? (
+				<Textarea
+					value={content}
+					onChange={(ev) =>
+						onChange(id, "content", String(ev?.target?.value))
+					}
+				/>
+			) : (
+				<div className="flex flex-col justify-start items-start gap-y-2">
+					<Input
+						type="file"
+						onChange={(ev) => GetBase64IMG(id, ev)}
+					/>
+					{content !== "" && (
+						<img
+							src={content}
+							className="rounded-md w-full h-full object-contain"
+							alt="Description image"
+						/>
+					)}
+				</div>
+			)}
 		</div>
 	);
 };
@@ -212,6 +378,7 @@ const DescriptionDnDColumn = ({
 						id={String(description.id)}
 						content={description.content}
 						type={description.type}
+						list_items={description.list_items}
 						onChange={onChange}
 						removeDescription={removeDescription}
 					/>
@@ -222,6 +389,7 @@ const DescriptionDnDColumn = ({
 };
 
 export default function CreateTaskPage() {
+	let navigate = useNavigate();
 	let form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -233,11 +401,12 @@ export default function CreateTaskPage() {
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
-			console.log(values);
 			await CreateTask(values);
-			toast("Era pra criar alguma coisa kkkkkkk");
+			toast("Tarefa criada com sucesso !");
+			navigate("/");
 		} catch (err) {
-			toast("Pelo visto n deu certo n kkkkk kkkkkkk");
+			console.log(err);
+			toast("Erro ao criar tarefa");
 		}
 	}
 
@@ -248,6 +417,7 @@ export default function CreateTaskPage() {
 			type: "text",
 			content: "",
 			order: descriptionList.length,
+			list_items: [],
 		});
 		form.setValue("descriptions", descriptionList);
 	}
@@ -311,7 +481,7 @@ export default function CreateTaskPage() {
 						/>
 						<Button
 							variant="outline"
-							type="submit"
+							type="button"
 							className="dark:text-[#CDFE04] dark:bg-transparent dark:border-[#CDFE04] dark:hover:bg-[#CDFE04] dark:hover:text-black"
 							onClick={AddDescription}
 						>
@@ -343,7 +513,7 @@ export default function CreateTaskPage() {
 						<h2 className="leading-none font-extrabold">
 							{form.watch("title")}
 						</h2>
-						{form.watch("descriptions").map((description, index) =>
+						{form.watch("descriptions").map((description) =>
 							description.type === "text" ? (
 								<small
 									key={description.id}
@@ -351,13 +521,61 @@ export default function CreateTaskPage() {
 								>
 									{description.content}
 								</small>
-							) : (
-								<p
+							) : description.type === "list" ? (
+								<div
 									key={description.id}
-									className="leading-7 [&:not(:first-child)]:mt-6"
+									className="flex flex-col justify-start items-start gap-y-2"
 								>
-									{description.content}
-								</p>
+									<small
+										key={description.id}
+										className="text-sm font-medium leading-none mt-4"
+									>
+										{description.content}
+									</small>
+									{description.list_items.length > 0 && (
+										<ul className="ml-2 list-none [&>li]:mt-2">
+											{description.list_items.map(
+												(list_item, index) => (
+													<li key={index}>
+														<Checkbox
+															className="mr-2"
+															defaultChecked={
+																list_item.done
+															}
+														/>
+														{list_item.done ? (
+															<s>
+																{list_item.name}
+															</s>
+														) : (
+															<span>
+																{list_item.name}
+															</span>
+														)}
+													</li>
+												)
+											)}
+										</ul>
+									)}
+								</div>
+							) : description.type === "video" ? (
+								<iframe
+									width="560"
+									height="315"
+									className="w-full h-full my-4 rounded"
+									src={description.content}
+									title="YouTube video player"
+									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+									referrerPolicy="strict-origin-when-cross-origin"
+									allowFullScreen
+								></iframe>
+							) : (
+								<img
+									key={description.id}
+									src={description.content}
+									className="rounded-md w-full h-full object-contain"
+									alt="Description image"
+								/>
 							)
 						)}
 					</div>
