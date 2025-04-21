@@ -24,7 +24,7 @@ import {
 	Plus,
 	Trash2,
 } from "lucide-react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { CSS } from "@dnd-kit/utilities";
 import { z } from "zod";
 import {
@@ -51,93 +51,11 @@ import { ExtractSrcFromEmbedded } from "@/utils";
 import { useNavigate } from "react-router";
 import { useLoaderData } from "react-router";
 import { useEffect } from "react";
-
-export interface IDescription {
-	id: string;
-	type: "text" | "image" | "video" | "list";
-	content: string;
-	order: number;
-	list_items: {
-		id: string;
-		name: string;
-		done: boolean;
-		order: number;
-	}[];
-}
-
-export interface ISortableItem {
-	id: string;
-	content: string;
-	type: "video" | "image" | "text" | "list";
-	list_items: {
-		id: string;
-		name: string;
-		done: boolean;
-		order: number;
-	}[];
-	onChange: any;
-	addDescription: any;
-	removeDescription: any;
-	RemoveListItem: any;
-}
-
-export interface IDescriptionDnDColumn {
-	onChange: any;
-	addDescriptionList: any;
-	removeDescription: any;
-	RemoveListItem: any;
-	form: UseFormReturn<
-		{
-			title: string;
-			color: string;
-			descriptions: {
-				type: "text" | "image" | "video" | "list";
-				id: string;
-				content: string;
-				order: number;
-				list_items: {
-					id: string;
-					name: string;
-					done: boolean;
-					order: number;
-				}[];
-			}[];
-			new: {
-				descriptions: number[];
-				list_items: number[];
-			};
-			removed: {
-				descriptions: number[];
-				list_items: number[];
-			};
-		},
-		any,
-		{
-			title: string;
-			color: string;
-			descriptions: {
-				type: "text" | "image" | "video" | "list";
-				id: string;
-				content: string;
-				order: number;
-				list_items: {
-					id: string;
-					name: string;
-					done: boolean;
-					order: number;
-				}[];
-			}[];
-			new: {
-				descriptions: number[];
-				list_items: number[];
-			};
-			removed: {
-				descriptions: number[];
-				list_items: number[];
-			};
-		}
-	>;
-}
+import {
+	IDescription,
+	ISortableItem,
+	IDescriptionDnDColumn,
+} from "@/interfaces";
 
 const formSchema = z.object({
 	title: z.string(),

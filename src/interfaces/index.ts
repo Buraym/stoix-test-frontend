@@ -1,3 +1,4 @@
+import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 
 export interface ITask {
@@ -21,6 +22,93 @@ export interface ITask {
 		created_at: string;
 		updated_at: string;
 	}>;
+}
+
+export interface IDescription {
+	id: string;
+	type: "text" | "image" | "video" | "list";
+	content: string;
+	order: number;
+	list_items: {
+		id: string;
+		name: string;
+		done: boolean;
+		order: number;
+	}[];
+}
+
+export interface ISortableItem {
+	id: string;
+	content: string;
+	type: "video" | "image" | "text" | "list";
+	list_items: {
+		id: string;
+		name: string;
+		done: boolean;
+		order: number;
+	}[];
+	onChange: any;
+	addDescription: any;
+	removeDescription: any;
+	RemoveListItem: any;
+}
+
+export interface IDescriptionDnDColumn {
+	onChange: any;
+	addDescriptionList: any;
+	removeDescription: any;
+	RemoveListItem: any;
+	form: UseFormReturn<
+		{
+			title: string;
+			color: string;
+			descriptions: {
+				type: "text" | "image" | "video" | "list";
+				id: string;
+				content: string;
+				order: number;
+				list_items: {
+					id: string;
+					name: string;
+					done: boolean;
+					order: number;
+				}[];
+			}[];
+			new: {
+				descriptions: number[];
+				list_items: number[];
+			};
+			removed: {
+				descriptions: number[];
+				list_items: number[];
+			};
+		},
+		any,
+		{
+			title: string;
+			color: string;
+			descriptions: {
+				type: "text" | "image" | "video" | "list";
+				id: string;
+				content: string;
+				order: number;
+				list_items: {
+					id: string;
+					name: string;
+					done: boolean;
+					order: number;
+				}[];
+			}[];
+			new: {
+				descriptions: number[];
+				list_items: number[];
+			};
+			removed: {
+				descriptions: number[];
+				list_items: number[];
+			};
+		}
+	>;
 }
 
 export const tasksSchema: z.ZodType<ITask> = z.object({
