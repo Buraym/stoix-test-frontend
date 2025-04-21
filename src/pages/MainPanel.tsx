@@ -211,7 +211,7 @@ export default function MainPanelPage() {
 									description.type === "text" ? (
 										<p
 											key={description.id}
-											className="text-sm font-medium leading-none mt-0 text-justify"
+											className="text-sm font-medium leading-none mt-4 text-justify"
 										>
 											{description.content}
 										</p>
@@ -293,12 +293,15 @@ export default function MainPanelPage() {
 									) : (
 										<Dialog>
 											<DialogTrigger asChild>
-												<AspectRatio ratio={16 / 9}>
+												<AspectRatio
+													ratio={16 / 9}
+													className="my-4"
+												>
 													<img
 														src={
 															description.content
 														}
-														className="w-full h-full rounded-md object-cover my-4"
+														className="w-full h-full rounded-md object-cover "
 														alt="Description image"
 													/>
 												</AspectRatio>

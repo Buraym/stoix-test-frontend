@@ -620,7 +620,7 @@ export default function CreateTaskPage() {
 													<li key={index}>
 														<Checkbox
 															className="mr-2"
-															defaultChecked={
+															checked={
 																list_item.done
 															}
 														/>
@@ -655,7 +655,7 @@ export default function CreateTaskPage() {
 								<img
 									key={description.id}
 									src={description.content}
-									className="rounded-md w-full h-full object-contain"
+									className="rounded-md w-full h-full object-contain mt-4"
 									alt="Description image"
 								/>
 							)
