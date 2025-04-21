@@ -21,6 +21,7 @@ import {
 	GripHorizontal,
 	ListPlus,
 	ListX,
+	Loader2,
 	Plus,
 	Trash2,
 } from "lucide-react";
@@ -84,6 +85,7 @@ const formSchema = z.object({
 		descriptions: z.array(z.number()),
 		list_items: z.array(z.number()),
 	}),
+	loading: z.boolean(),
 });
 
 const SortableDescription = ({
@@ -95,6 +97,7 @@ const SortableDescription = ({
 	addDescription,
 	removeDescription,
 	RemoveListItem,
+	loading,
 }: ISortableItem) => {
 	const { attributes, listeners, setNodeRef, transform, transition } =
 		useSortable({ id });
@@ -153,6 +156,7 @@ const SortableDescription = ({
 						onValueChange={(val) =>
 							onChange(id, "type", String(val))
 						}
+						disabled={loading}
 					>
 						<SelectTrigger className="w-[200px]">
 							<SelectValue placeholder="Selecione um tipo" />
@@ -179,8 +183,9 @@ const SortableDescription = ({
 							variant="outline"
 							className="border-[#CDFE04] bg-[#CDFE04] dark:text-[#CDFE04] dark:bg-sidebar-accent dark:border-sidebar-accent"
 							onClick={() => addDescription(id)}
+							disabled={loading}
 						>
-							<Plus />
+							{loading ? <Loader2 /> : <Plus />}
 						</Button>
 					)}
 				</div>
@@ -189,8 +194,9 @@ const SortableDescription = ({
 					type="button"
 					className="text-[#DD1C1A] hover:bg-[#DD1C1A] hover:border-[#DD1C1A] hover:text-white transition-colors"
 					onClick={() => removeDescription(id)}
+					disabled={loading}
 				>
-					<Trash2 />
+					{loading ? <Loader2 /> : <Trash2 />}
 				</Button>
 			</div>
 			{type === "list" ? (
@@ -200,6 +206,7 @@ const SortableDescription = ({
 						onChange={(ev) =>
 							onChange(id, "content", String(ev?.target?.value))
 						}
+						disabled={loading}
 					/>
 					{list_items?.map((list_item, list_item_index) => (
 						<div
@@ -224,6 +231,7 @@ const SortableDescription = ({
 										})
 									)
 								}
+								disabled={loading}
 							/>
 							<Input
 								value={list_item.name}
@@ -244,13 +252,15 @@ const SortableDescription = ({
 										)
 									)
 								}
+								disabled={loading}
 							/>
 							<Button
 								variant="outline"
 								className="text-[#DD1C1A] bg-transparent hover:bg-[#DD1C1A] hover:border-[#DD1C1A] hover:text-white transition-colors"
 								onClick={() => RemoveListItem(id, list_item.id)}
+								disabled={loading}
 							>
-								<ListX />
+								{loading ? <Loader2 /> : <ListX />}
 							</Button>
 						</div>
 					))}
@@ -258,6 +268,7 @@ const SortableDescription = ({
 			) : type === "video" ? (
 				<div className="flex flex-col justify-start items-start gap-y-2">
 					<Input
+						disabled={loading}
 						onChange={(ev) =>
 							GetVideoURL(id, String(ev?.target?.value))
 						}
@@ -278,6 +289,7 @@ const SortableDescription = ({
 			) : type === "text" ? (
 				<Textarea
 					value={content}
+					disabled={loading}
 					onChange={(ev) =>
 						onChange(id, "content", String(ev?.target?.value))
 					}
@@ -286,6 +298,7 @@ const SortableDescription = ({
 				<div className="flex flex-col justify-start items-start gap-y-2">
 					<Input
 						type="file"
+						disabled={loading}
 						onChange={(ev) => GetBase64IMG(id, ev)}
 					/>
 					{content !== "" && (
@@ -307,6 +320,7 @@ const DescriptionDnDColumn = ({
 	addDescriptionList,
 	removeDescription,
 	RemoveListItem,
+	loading,
 }: IDescriptionDnDColumn) => {
 	const sensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -352,6 +366,7 @@ const DescriptionDnDColumn = ({
 						removeDescription={removeDescription}
 						addDescription={addDescriptionList}
 						RemoveListItem={RemoveListItem}
+						loading={loading}
 					/>
 				))}
 			</SortableContext>
@@ -378,11 +393,13 @@ export default function CreateTaskPage() {
 				descriptions: [],
 				list_items: [],
 			},
+			loading: false,
 		},
 	});
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
+			form.setValue("loading", true);
 			if (params?.id) {
 				let id = String(params?.id);
 				const message = await UpdateTaskById({
@@ -399,7 +416,9 @@ export default function CreateTaskPage() {
 				toast("Tarefa criada com sucesso !");
 				navigate("/");
 			}
+			form.setValue("loading", false);
 		} catch (err) {
+			form.setValue("loading", false);
 			console.log(err);
 			toast("Erro ao criar tarefa");
 		}
@@ -563,9 +582,19 @@ export default function CreateTaskPage() {
 							type="button"
 							className="border-[#CDFE04] bg-transparent text-[#CDFE04] hover:bg-[#CDFE04] hover:text-sidebar-foreground  dark:bg-transparent dark:text-sidebar-accent dark:border-sidebar-accent dark:hover:bg-sidebar-accent dark:hover:text-[#CDFE04] transition-all"
 							onClick={AddDescription}
+							disabled={form.watch("loading")}
 						>
-							<ListPlus />
-							Adicionar descrição
+							{form.watch("loading") ? (
+								<>
+									<Loader2 className="animate-spin" />
+									Processando
+								</>
+							) : (
+								<>
+									<ListPlus />
+									Adicionar descrição
+								</>
+							)}
 						</Button>
 						<DescriptionDnDColumn
 							form={form}
@@ -573,14 +602,28 @@ export default function CreateTaskPage() {
 							removeDescription={RemoveDescription}
 							addDescriptionList={AddListItem}
 							RemoveListItem={RemoveListItem}
+							loading={form.watch("loading")}
 						/>
 						<Button
 							variant="outline"
 							type="submit"
 							className="border-[#CDFE04] bg-[#CDFE04] dark:text-[#CDFE04] dark:bg-sidebar-accent dark:border-sidebar-accent"
+							disabled={form.watch("loading")}
 						>
-							<ClipboardPlus />
-							{params?.id ? "Atualizar" : "Registrar"} tarefa
+							{form.watch("loading") ? (
+								<>
+									<Loader2 className="animate-spin" />
+									Processando
+								</>
+							) : (
+								<>
+									<ClipboardPlus />
+									{params?.id
+										? "Atualizar"
+										: "Registrar"}{" "}
+									tarefa
+								</>
+							)}
 						</Button>
 					</form>
 				</Form>

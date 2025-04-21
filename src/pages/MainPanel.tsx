@@ -1,5 +1,5 @@
 import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
-import { BadgePlus, Search, Trash2 } from "lucide-react";
+import { BadgePlus, Loader2, Search, Trash2 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,6 @@ import { z } from "zod";
 import { useEffect } from "react";
 import {
 	ChangeListItemChecked,
-	GetCRSFCookie,
 	GetTasks,
 	GetTasksByTitle,
 	RemoveTaskById,
@@ -57,6 +56,7 @@ const formSchema = z.object({
 			})
 		),
 	}),
+	loading: z.boolean(),
 });
 
 export default function MainPanelPage() {
@@ -69,18 +69,27 @@ export default function MainPanelPage() {
 	});
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
-		const tasks = await GetTasksByTitle(values.taskTitle);
-		form.setValue("tasks", tasks);
+		try {
+			form.setValue("loading", true);
+			const tasks = await GetTasksByTitle(values.taskTitle);
+			form.setValue("tasks", tasks);
+			form.setValue("loading", false);
+		} catch (err) {
+			toast("Houve um erro ao listar as tarefas !");
+			form.setValue("loading", false);
+		}
 	}
 
 	async function ListTasks() {
 		try {
-			await GetCRSFCookie();
+			form.setValue("loading", true);
 			const tasks = await GetTasks();
 			form.setValue("tasks", tasks);
+			form.setValue("loading", false);
 		} catch (err) {
-			toast("Houve um erro ao listar tarefas !");
 			console.log(err);
+			form.setValue("loading", false);
+			toast("Houve um erro ao listar tarefas !");
 		}
 	}
 
@@ -131,12 +140,16 @@ export default function MainPanelPage() {
 
 	async function DeleteTask(id: number) {
 		try {
-			const message = await RemoveTaskById(id);
-			const tasks = form.watch("tasks").filter((task) => task.id === id);
+			form.setValue("loading", true);
+			const tasks = form.watch("tasks").filter((task) => task.id !== id);
 			form.setValue("tasks", tasks);
+			const message = await RemoveTaskById(id);
+
 			toast(message);
+			form.setValue("loading", false);
 		} catch (err) {
 			console.log(err);
+			form.setValue("loading", false);
 			toast("Houve um erro ao deletar o tarefa !");
 		}
 	}
@@ -172,8 +185,13 @@ export default function MainPanelPage() {
 							variant="outline"
 							type="submit"
 							className="border-[#CDFE04] bg-[#CDFE04] dark:text-[#CDFE04] dark:bg-sidebar-accent dark:border-sidebar-accent"
+							disabled={form.watch("loading")}
 						>
-							<Search />
+							{form.watch("loading") ? (
+								<Loader2 className="animate-spin" />
+							) : (
+								<Search />
+							)}
 						</Button>
 					</form>
 				</Form>
@@ -211,7 +229,7 @@ export default function MainPanelPage() {
 									description.type === "text" ? (
 										<p
 											key={description.id}
-											className="text-sm font-medium leading-none mt-4 text-justify"
+											className="text-sm font-medium leading-none mt-4 text-justify break-all"
 										>
 											{description.content}
 										</p>
@@ -331,13 +349,13 @@ export default function MainPanelPage() {
 											<Trash2 />
 										</Button>
 									</DialogTrigger>
-									<DialogContent className="sm:max-w-md">
+									<DialogContent className="sm:max-w-md border-none">
 										<DialogHeader>
-											<DialogTitle>
+											<DialogTitle className="dark:text-[#CDFE04]">
 												Deseja realmente deletar esta
 												tarefa
 											</DialogTitle>
-											<DialogDescription>
+											<DialogDescription className="dark:text-[#CDFE04]">
 												Está ação será irreversível, e
 												todos os dados serão perdidos
 												uma vez que concluída.
@@ -349,6 +367,9 @@ export default function MainPanelPage() {
 													type="button"
 													variant="outline"
 													className="text-[#DD1C1A] hover:bg-[#DD1C1A] hover:border-[#DD1C1A] hover:text-white transition-colors"
+													disabled={form.watch(
+														"loading"
+													)}
 													onClick={() =>
 														DeleteTask(task.id)
 													}
@@ -357,7 +378,10 @@ export default function MainPanelPage() {
 												</Button>
 											</DialogClose>
 											<DialogClose asChild>
-												<Button type="button">
+												<Button
+													type="button"
+													className="dark:bg-[#CDFE04]"
+												>
 													Cancelar
 												</Button>
 											</DialogClose>

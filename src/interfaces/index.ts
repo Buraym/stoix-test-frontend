@@ -51,6 +51,7 @@ export interface ISortableItem {
 	addDescription: any;
 	removeDescription: any;
 	RemoveListItem: any;
+	loading: boolean;
 }
 
 export interface IDescriptionDnDColumn {
@@ -82,6 +83,7 @@ export interface IDescriptionDnDColumn {
 				descriptions: number[];
 				list_items: number[];
 			};
+			loading: boolean;
 		},
 		any,
 		{
@@ -107,8 +109,10 @@ export interface IDescriptionDnDColumn {
 				descriptions: number[];
 				list_items: number[];
 			};
+			loading: boolean;
 		}
 	>;
+	loading: boolean;
 }
 
 export const tasksSchema: z.ZodType<ITask> = z.object({
