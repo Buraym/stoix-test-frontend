@@ -8,7 +8,7 @@ import {
 	FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { CheckUser, GetCRSFCookie, GetUserLogin } from "@/utils/api";
+import { GetUserLogin } from "@/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCheck, Loader2, LogIn } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -39,11 +39,12 @@ export default function LoginPage() {
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
 			form.setValue("loading", true);
-			const responseData = await GetUserLogin({
+			await GetUserLogin({
 				email: values.email,
 				password: values.password,
 				rememberme: values.rememberme,
 			});
+			navigate("/");
 			form.setValue("loading", false);
 		} catch (err) {
 			form.setValue("loading", false);
