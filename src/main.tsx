@@ -4,6 +4,9 @@ import "./index.css";
 import MainLayout from "./layouts/user.tsx";
 import MainPanelPage from "./pages/MainPanel.tsx";
 import CreateTaskPage from "./pages/CreateTaskPage.tsx";
+import AuthLayout from "./layouts/auth.tsx";
+import LoginPage from "./pages/auth/LoginPage.tsx";
+import RegisterPage from "./pages/auth/RegisterPage.tsx";
 
 let router = createBrowserRouter([
 	{
@@ -28,6 +31,20 @@ let router = createBrowserRouter([
 			{
 				path: "configs",
 				Component: MainPanelPage,
+			},
+		],
+	},
+	{
+		path: "/auth",
+		Component: AuthLayout,
+		children: [
+			{
+				index: true,
+				Component: LoginPage,
+			},
+			{
+				path: "register",
+				Component: RegisterPage,
 			},
 		],
 	},

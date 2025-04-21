@@ -1,14 +1,15 @@
+import { useAuthStore } from "@/stores/auth-store";
 import { api_instance } from ".";
 import { ITask } from "@/interfaces";
 
 export async function GetTasks() {
-	const tasks = (await api_instance.get("tasks")).data;
+	const tasks = (await api_instance.get("api/tasks")).data;
 	return tasks;
 }
 
 export async function GetTaskById(id: number) {
 	try {
-		let task = (await api_instance.get(`tasks/${id}`)).data;
+		let task = (await api_instance.get(`api/tasks/${id}`)).data;
 		task!.descriptions = task!.descriptions.map((description: any) => {
 			description.id = String(description.id);
 			description.list_items = description.list_items.map((item: any) => {
@@ -26,7 +27,7 @@ export async function GetTaskById(id: number) {
 export async function GetTasksByTitle(title: string): Promise<ITask[]> {
 	try {
 		const tasks = (
-			await api_instance.get("tasks/search", {
+			await api_instance.get("api/tasks/search", {
 				params: {
 					title,
 				},
@@ -40,7 +41,7 @@ export async function GetTasksByTitle(title: string): Promise<ITask[]> {
 }
 
 export async function RemoveTaskById(id: number): Promise<string> {
-	const message = (await api_instance.delete(`tasks/${id}`)).data;
+	const message = (await api_instance.delete(`api/tasks/${id}`)).data;
 	return message.msg;
 }
 
@@ -64,7 +65,7 @@ export async function CreateTask({
 	}>;
 }) {
 	let { msg, task } = (
-		await api_instance.post("tasks", {
+		await api_instance.post("api/tasks", {
 			title,
 			color,
 		})
@@ -74,7 +75,7 @@ export async function CreateTask({
 		try {
 			if (descriptions[i].list_items.length > 0) {
 				const { description } = (
-					await api_instance.post("task-descriptions", {
+					await api_instance.post("api/task-descriptions", {
 						type: descriptions[i].type,
 						content: descriptions[i].content,
 						order: i,
@@ -88,7 +89,7 @@ export async function CreateTask({
 						j++
 					) {
 						descriptionPromises.push(
-							api_instance.post("list-items", {
+							api_instance.post("api/list-items", {
 								name: descriptions[i].list_items[j].name,
 								order: j,
 								done: descriptions[i].list_items[j].done,
@@ -99,7 +100,7 @@ export async function CreateTask({
 				}
 			} else {
 				descriptionPromises.push(
-					api_instance.post("task-descriptions", {
+					api_instance.post("api/task-descriptions", {
 						type: descriptions[i].type,
 						content: descriptions[i].content,
 						order: i,
@@ -163,7 +164,7 @@ export async function UpdateTaskById({
 
 			if (actualDescription!.list_items.length > 0) {
 				const { description } = (
-					await api_instance.post("task-descriptions", {
+					await api_instance.post("api/task-descriptions", {
 						type: actualDescription!.type,
 						content: actualDescription!.content,
 						order: actualDescriptionOrder,
@@ -178,7 +179,7 @@ export async function UpdateTaskById({
 						j++
 					) {
 						addedPromises.push(
-							api_instance.post("list-items", {
+							api_instance.post("api/list-items", {
 								name: descriptions[actualDescriptionOrder]
 									.list_items[j].name,
 								order: j,
@@ -191,7 +192,7 @@ export async function UpdateTaskById({
 				}
 			} else {
 				addedPromises.push(
-					api_instance.post("task-descriptions", {
+					api_instance.post("api/task-descriptions", {
 						type: actualDescription!.type,
 						content: actualDescription!.content,
 						order: actualDescriptionOrder,
@@ -224,7 +225,7 @@ export async function UpdateTaskById({
 				);
 
 			addedPromises.push(
-				api_instance.post("list-items", {
+				api_instance.post("api/list-items", {
 					name: actualListItem!.name,
 					order: actualListItemOrder,
 					done: actualListItem!.done,
@@ -252,7 +253,7 @@ export async function UpdateTaskById({
 		try {
 			descriptionPromises.push(
 				api_instance.put(
-					`task-descriptions/${descriptionsToBeUpdated[i].id}`,
+					`api/task-descriptions/${descriptionsToBeUpdated[i].id}`,
 					{
 						type: descriptionsToBeUpdated[i].type,
 						content: descriptionsToBeUpdated[i].content,
@@ -269,7 +270,7 @@ export async function UpdateTaskById({
 				) {
 					descriptionPromises.push(
 						api_instance.put(
-							`list-items/${descriptionsToBeUpdated[i].list_items[j].id}`,
+							`api/list-items/${descriptionsToBeUpdated[i].list_items[j].id}`,
 							{
 								name: descriptionsToBeUpdated[i].list_items[j]
 									.name,
@@ -291,13 +292,15 @@ export async function UpdateTaskById({
 
 	for (let d = 0; d < deleted.descriptions.length; d++) {
 		deletedPromises.push(
-			api_instance.delete(`task-descriptions/${deleted.descriptions[d]}`)
+			api_instance.delete(
+				`api/task-descriptions/${deleted.descriptions[d]}`
+			)
 		);
 	}
 
 	for (let d = 0; d < deleted.list_items.length; d++) {
 		deletedPromises.push(
-			api_instance.delete(`list-items/${deleted.list_items[d]}`)
+			api_instance.delete(`api/list-items/${deleted.list_items[d]}`)
 		);
 	}
 
@@ -305,7 +308,7 @@ export async function UpdateTaskById({
 		...addedPromises,
 		...deletedPromises,
 		...descriptionPromises,
-		api_instance.put(`tasks/${id}`, {
+		api_instance.put(`api/tasks/${id}`, {
 			title,
 			color,
 		}),
@@ -328,11 +331,62 @@ export async function ChangeListItemChecked({
 	task_description_id: number;
 }) {
 	const { msg } = (
-		await api_instance.put(`list-items/${id}`, {
+		await api_instance.put(`api/list-items/${id}`, {
 			name,
 			done,
 			order,
 			task_description_id,
+		})
+	).data;
+	return msg;
+}
+
+export async function GetCRSFCookie() {
+	await api_instance.get("sanctum/csrf-cookie");
+}
+
+export async function GetUserLogin({
+	email,
+	password,
+	rememberme,
+}: {
+	email: string;
+	password: string;
+	rememberme: boolean;
+}): Promise<{ user: any; token: string }> {
+	await api_instance.get("sanctum/csrf-cookie");
+	const response = (
+		await api_instance.post("api/login", {
+			email,
+			password,
+			rememberme,
+		})
+	).data;
+	return response;
+}
+
+export async function CheckUser() {
+	const response = (await api_instance.get("api/user")).data;
+	return response;
+}
+
+export async function RegisterUser({
+	name,
+	email,
+	password,
+	password_confirmation,
+}: {
+	name: string;
+	email: string;
+	password: string;
+	password_confirmation: string;
+}): Promise<string> {
+	const { msg } = (
+		await api_instance.post("api/register", {
+			name,
+			email,
+			password,
+			password_confirmation,
 		})
 	).data;
 	return msg;
