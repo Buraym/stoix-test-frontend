@@ -1,4 +1,4 @@
-import { DoorOpen, Home, Kanban, Settings } from "lucide-react";
+import { DoorOpen, Home } from "lucide-react";
 
 import {
 	Sidebar,
@@ -12,27 +12,14 @@ import {
 	SidebarMenuItem,
 } from "../../components/ui/sidebar";
 import { ModeToggle } from "./mode-toggle";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStore } from "@/stores/user-store";
 import { useNavigate } from "react-router";
-
-const topics = [
-	{
-		title: "Menu principal",
-		url: "/",
-		icon: Home,
-	},
-	{
-		title: "Kanban",
-		url: "/kanban",
-		icon: Kanban,
-	},
-];
 
 export function AppSidebar() {
 	let navigate = useNavigate();
 
 	function LogOut() {
-		useAuthStore.getState().clearToken();
+		useAuthStore.getState().clearUser();
 		navigate("/auth");
 	}
 

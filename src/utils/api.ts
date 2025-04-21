@@ -1,4 +1,3 @@
-import { useAuthStore } from "@/stores/auth-store";
 import { api_instance } from ".";
 import { ITask } from "@/interfaces";
 
