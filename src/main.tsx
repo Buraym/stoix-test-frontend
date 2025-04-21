@@ -28,10 +28,6 @@ let router = createBrowserRouter([
 				},
 				Component: CreateTaskPage,
 			},
-			{
-				path: "configs",
-				Component: MainPanelPage,
-			},
 		],
 	},
 	{
