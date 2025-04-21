@@ -1,4 +1,4 @@
-import { Home, Kanban, Settings } from "lucide-react";
+import { DoorOpen, Home, Kanban, Settings } from "lucide-react";
 
 import {
 	Sidebar,
@@ -12,6 +12,8 @@ import {
 	SidebarMenuItem,
 } from "../../components/ui/sidebar";
 import { ModeToggle } from "./mode-toggle";
+import { useAuthStore } from "@/stores/auth-store";
+import { useNavigate } from "react-router";
 
 const topics = [
 	{
@@ -27,6 +29,13 @@ const topics = [
 ];
 
 export function AppSidebar() {
+	let navigate = useNavigate();
+
+	function LogOut() {
+		useAuthStore.getState().clearToken();
+		navigate("/auth");
+	}
+
 	return (
 		<Sidebar collapsible="icon">
 			<SidebarContent>
@@ -50,7 +59,12 @@ export function AppSidebar() {
 			</SidebarContent>
 			<SidebarFooter>
 				<SidebarMenu>
-					<SidebarMenuItem key="Configurações">
+					<SidebarMenuItem>
+						<SidebarMenuButton asChild>
+							<ModeToggle />
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+					<SidebarMenuItem>
 						<SidebarMenuButton asChild>
 							<a href="configs">
 								<Settings />
@@ -59,8 +73,9 @@ export function AppSidebar() {
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 					<SidebarMenuItem>
-						<SidebarMenuButton asChild>
-							<ModeToggle />
+						<SidebarMenuButton onClick={LogOut}>
+							<DoorOpen />
+							<span>Desconectar-se ?</span>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 				</SidebarMenu>

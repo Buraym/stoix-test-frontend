@@ -22,6 +22,7 @@ import { z } from "zod";
 import { useEffect } from "react";
 import {
 	ChangeListItemChecked,
+	GetCRSFCookie,
 	GetTasks,
 	GetTasksByTitle,
 	RemoveTaskById,
@@ -74,6 +75,7 @@ export default function MainPanelPage() {
 
 	async function ListTasks() {
 		try {
+			await GetCRSFCookie();
 			const tasks = await GetTasks();
 			form.setValue("tasks", tasks);
 		} catch (err) {
