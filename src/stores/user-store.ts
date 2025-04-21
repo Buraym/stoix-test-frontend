@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 
 type UserStoreState = {
 	user: { name: string; email: string };
-	setUser: (user: string) => void;
+	setUser: (user: { name: string; email: string }) => void;
 	clearUser: () => void;
 };
 
