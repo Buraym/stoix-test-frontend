@@ -259,7 +259,7 @@ const SortableDescription = ({
 						<Button
 							type="button"
 							variant="outline"
-							className="dark:text-[#CDFE04]"
+							className="border-[#CDFE04] bg-[#CDFE04] dark:text-[#CDFE04] dark:bg-sidebar-accent dark:border-sidebar-accent"
 							onClick={() => addDescription(id)}
 						>
 							<Plus />
@@ -286,10 +286,11 @@ const SortableDescription = ({
 					{list_items?.map((list_item, list_item_index) => (
 						<div
 							key={list_item_index}
-							className="flex w-full justify-center items-center gap-x-2 px-2 pt-4"
+							className="flex w-full justify-center items-center gap-x-2 pt-4"
 						>
 							<Checkbox
 								checked={list_item.done}
+								className="data-[state=checked]:border-none data-[state=checked]:bg-[#CDFE04] border-[#CDFE04] dark:border-[#272D2D] dark:data-[state=checked]:bg-[#272D2D] dark:data-[state=checked]:text-[#CDFE04] transition-all"
 								onCheckedChange={(checked) =>
 									onChange(
 										id,
@@ -642,7 +643,7 @@ export default function CreateTaskPage() {
 						<Button
 							variant="outline"
 							type="button"
-							className="dark:text-[#CDFE04] dark:bg-transparent dark:border-[#CDFE04] dark:hover:bg-[#CDFE04] dark:hover:text-black"
+							className="border-[#CDFE04] bg-transparent text-[#CDFE04] hover:bg-[#CDFE04] hover:text-sidebar-foreground  dark:bg-transparent dark:text-sidebar-accent dark:border-sidebar-accent dark:hover:bg-sidebar-accent dark:hover:text-[#CDFE04] transition-all"
 							onClick={AddDescription}
 						>
 							<ListPlus />
@@ -658,7 +659,7 @@ export default function CreateTaskPage() {
 						<Button
 							variant="outline"
 							type="submit"
-							className="dark:bg-[#CDFE04] dark:border-none"
+							className="border-[#CDFE04] bg-[#CDFE04] dark:text-[#CDFE04] dark:bg-sidebar-accent dark:border-sidebar-accent"
 						>
 							<ClipboardPlus />
 							{params?.id ? "Atualizar" : "Registrar"} tarefa

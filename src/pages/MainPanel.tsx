@@ -171,14 +171,17 @@ export default function MainPanelPage() {
 						<Button
 							variant="outline"
 							type="submit"
-							className="dark:text-[#CDFE04]"
+							className="border-[#CDFE04] bg-[#CDFE04] dark:text-[#CDFE04] dark:bg-sidebar-accent dark:border-sidebar-accent"
 						>
 							<Search />
 						</Button>
 					</form>
 				</Form>
 				<Link to="/create-task">
-					<Button variant="outline" className="dark:text-[#CDFE04]">
+					<Button
+						variant="outline"
+						className="border-[#CDFE04] bg-[#CDFE04] dark:text-[#CDFE04] dark:bg-sidebar-accent dark:border-sidebar-accent"
+					>
 						<BadgePlus />
 					</Button>
 				</Link>

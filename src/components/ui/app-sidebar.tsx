@@ -37,39 +37,32 @@ export function AppSidebar() {
 	}
 
 	return (
-		<Sidebar collapsible="icon">
-			<SidebarContent>
+		<Sidebar
+			collapsible="icon"
+			className="dark:border-sidebar-accent border-[#CDFE04]"
+		>
+			<SidebarContent className="dark:bg-sidebar-accent bg-[#CDFE04]">
 				<SidebarGroup>
 					<SidebarGroupLabel>Tarefas</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{topics.map((item) => (
-								<SidebarMenuItem key={item.title}>
-									<SidebarMenuButton asChild>
-										<a href={item.url}>
-											<item.icon />
-											<span>{item.title}</span>
-										</a>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
-							))}
+							<SidebarMenuItem>
+								<SidebarMenuButton asChild>
+									<a href="/">
+										<Home />
+										<span>Menu principal</span>
+									</a>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
-			<SidebarFooter>
+			<SidebarFooter className="dark:bg-sidebar-accent bg-[#CDFE04]">
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<SidebarMenuButton asChild>
 							<ModeToggle />
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-					<SidebarMenuItem>
-						<SidebarMenuButton asChild>
-							<a href="configs">
-								<Settings />
-								<span>Configurações</span>
-							</a>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 					<SidebarMenuItem>

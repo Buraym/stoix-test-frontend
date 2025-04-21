@@ -3,7 +3,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -97,11 +96,6 @@ export default function LoginPage() {
 											{...field}
 										/>
 									</FormControl>
-									<FormDescription className="dark:text-[#CDFE04] dark:hover:opacity-60 transition-all text-center">
-										<Link to="/auth/register">
-											Ainda não possui conta ?
-										</Link>
-									</FormDescription>
 								</FormItem>
 							)}
 						/>
@@ -142,6 +136,12 @@ export default function LoginPage() {
 								</>
 							)}
 						</Button>
+						<Link
+							to="/auth/register"
+							className="text-sm hover:opacity-60 hover:underline dark:text-[#CDFE04] transition-all text-center"
+						>
+							Ainda não possui conta ?
+						</Link>
 					</form>
 				</Form>
 			</div>

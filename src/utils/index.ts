@@ -10,7 +10,7 @@ api_instance.interceptors.response.use(
 	(error) => {
 		if (error.response?.status === 401) {
 			console.log(error.response);
-			window.location.href = "/auth";
+			// window.location.href = "/auth";
 		}
 		return Promise.reject(error);
 	}

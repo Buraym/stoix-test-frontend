@@ -1,11 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-	Form,
-	FormControl,
-	FormDescription,
-	FormField,
-	FormItem,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RegisterUser } from "@/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -127,11 +121,6 @@ export default function RegisterPage() {
 											{...field}
 										/>
 									</FormControl>
-									<FormDescription className="dark:text-[#CDFE04] dark:hover:opacity-60 transition-all text-center">
-										<Link to="/auth/">
-											Já possui uma conta ?
-										</Link>
-									</FormDescription>
 								</FormItem>
 							)}
 						/>
@@ -152,6 +141,12 @@ export default function RegisterPage() {
 								</>
 							)}
 						</Button>
+						<Link
+							to="/auth/"
+							className="text-sm hover:opacity-60 hover:underline dark:text-[#CDFE04] transition-all text-center"
+						>
+							Já possui uma conta ?
+						</Link>
 					</form>
 				</Form>
 			</div>
